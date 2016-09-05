@@ -1,0 +1,75 @@
+doctype html
+html
+  head
+    title= title
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    link(href='stylesheets/bootstrap.min.css', rel='stylesheet')
+    link(href='stylesheets/style.css', rel='stylesheet')
+    script(type='text/javascript', src='js/jquery.min.js')
+    script(type='text/javascript', src='js/bootstrap.min.js')
+  body
+    .container
+      nav.navbar.navbar-default.navbar-fixed-top
+        .container
+          .navbar-header
+            button.navbar-toggle.collapsed(type='button', data-toggle='collapse', data-target='#the-menu')
+              span.icon-bar
+              span.icon-bar
+              span.icon-bar
+            a.navbar-brand.brand(href='/index.html') Bethovzart
+          #the-menu.collapse.navbar-collapse
+            ul.nav.navbar-nav
+              li.active
+                a(href='/')
+                  span.glyphicon.glyphicon-home
+                  |  Home
+              li
+                a(href='/songslibrary')
+                  span.glyphicon.glyphicon-music
+                  |  Songs Library
+              li
+                a(href='/browse.html')
+                  span.glyphicon.glyphicon-pencil
+                  |  Analyze Song
+              li
+                a(href='/contact.html')
+                  span.glyphicon.glyphicon-earphone
+                  |  Contact Us
+            ul.nav.navbar-nav.navbar-right
+              li.dropdown
+                a(data-toggle='dropdown', href='#')
+                  span.glyphicon.glyphicon-user
+                  | Welcome Back 
+                  span.caret
+                ul.dropdown-menu
+                  li
+                    a(href='#')
+                      span.glyphicon.glyphicon-shopping-cart
+                      |  My Cart 
+                      span.badge 4
+                  li.divider
+                  li
+                    a(href='#')
+                      span.glyphicon.glyphicon-picture
+                      |  My Profile
+                  li
+                    a(href='#')
+                      span.glyphicon.glyphicon-gift
+                      |  Order History
+                  li
+                    a(href='#')
+                      span.glyphicon.glyphicon-envelope
+                      |  Notifications
+              li
+                a#logonLink(href='#')
+                  span.glyphicon.glyphicon-log-in
+                  |  Sign In
+            form.navbar-form.navbar-right.visible-md-inline.visible-lg-inline
+              .form-group(style='margin-top: 4px')
+                label.sr-only(for='keyword') Keyword
+                input#keyword.form-control.input-sm(type='text', placeholder='Enter Search keyword')
+      .page-header
+        h1
+          span.glyphicon.glyphicon-home
+          |  Bethovzart
+    block content

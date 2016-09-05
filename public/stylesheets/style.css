@@ -1,0 +1,10 @@
+body{
+    padding-top: 25px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.musiclistbox{
+    max-height: 300px;
+    overflow-y:scroll; 
+}

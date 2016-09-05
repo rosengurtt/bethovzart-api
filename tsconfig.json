@@ -1,0 +1,17 @@
+{
+    "compilerOptions": {
+        "target": "ES6", 
+        "module": "commonjs",
+        "noImplicitAny": false,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "sourceMap": true
+    },
+     "include": [
+        "views",
+        "routes"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

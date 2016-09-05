@@ -1,0 +1,85 @@
+extends layout
+
+block content
+  script(type='text/javascript').
+    function showFileName(){
+      var filename = $('#musicFile').val();
+          $("#fileSelected").text(filename);
+    };
+  .row
+      .col-xs-12.col-sm-12.col-md-12.col-lg-12
+        .h2 Songs Library
+  .row
+    .col-xs-12.col-sm-12.col-md-4.col-lg-4      
+      .panel.panel-info
+        .panel-heading Music Styles
+        .panel-body
+          .row
+            ul.list-group.musiclistbox
+              li.list-group-item Classic
+              li.list-group-item Rock
+              li.list-group-item Jazz
+    .col-xs-12.col-sm-12.col-md-4.col-lg-4
+      .panel.panel-info
+        .panel-heading Musicians
+        .panel-body
+          .row
+            ul.list-group.musiclistbox
+              li.list-group-item Deep Purple
+              li.list-group-item Led Zeppelin
+              li.list-group-item Pink Floyd
+    .col-xs-12.col-sm-12.col-md-4.col-lg-4
+      .panel.panel-info
+        .panel-heading Songs
+        .panel-body
+          .row
+            ul.list-group.musiclistbox
+              li.list-group-item Stairway to Heaven
+              li.list-group-item Message in a bottle
+              li.list-group-item Wonderwall
+  .row
+      .col-xs-12.col-sm-12.col-md-12.col-lg-12
+        .h3 Upload songs
+  .row
+      .col-xs-12.col-sm-12.col-md-8.col-lg-8
+        form#formSongUpload.form-horizontal(action='/songsLibrary', enctype='multipart/form-data', method='post')
+            .form-group
+                label.col-sm-3.control-label(for='musicStyle') Music style
+                .col-sm-9
+                .input-group
+                    span.input-group-addon
+                    input#musicStyle.form-control(type='text', placeholder='Music style', name='musicStyle')
+            .form-group
+                label.col-sm-3.control-label(for='musician') Musician or band
+                .col-sm-9
+                .input-group
+                    span.input-group-addon 
+                    input#musician.form-control(type='text', placeholder='Musician or band', name='musician')
+            .form-group
+                label.col-sm-3.control-label(for='songName') Song Name
+                .col-sm-9
+                .input-group
+                    span.input-group-addon
+                    input#songName.form-control(type='text', placeholder='Song name', name='songName')
+            .form-group
+                label.col-sm-3.control-label(for='songName') Select file
+                label.btn.btn-default.btn-file
+                    | Browse 
+                    input#musicFile(type='file', style='display: none;', name='musicFile' onchange='showFileName()')
+                    |&nbsp;
+                label#fileSelected                      
+            .clearfix  
+            .form-group
+                .col-sm-12.text-center
+                button.btn.btn-primary.btn-lg(type='submit', form='formSongUpload')
+                    span.glyphicon.glyphicon-upload
+                    |  Upload
+      .col-xs-12.col-sm-12.col-md-4.col-lg-4
+        |You can uload a midi file or a zip file contatining midi files.
+        br
+        br
+        |If you upload a zip file, it should have a folder structure with
+        |the music style at the root folder, the musician or band as a second level folder
+        |and the midi files as the content of these second level folders
+
+
