@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var multer = require('multer');
 var upload = multer({ dest: 'uploads/' });
+var db = require('./models/db');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 var app = express();
