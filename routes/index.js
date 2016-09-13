@@ -5,9 +5,8 @@ var multer = require('multer');
 var upload = multer({ dest: 'uploads/' });
 var extract = require('extract-zip');
 var randomstring = require("randomstring");
-var mongoose = require('mongoose');
-const musicStyle = require('../models/musicStyle/musicStyle');
-const band = require('../models/band/band');
+const midiFile2Db_1 = require("../utilities/midiFile2Db");
+let myMidiFile2Db = new midiFile2Db_1.midiFile2Db();
 const fs = require('fs');
 router.get('/', function (req, res, next) {
     res.render('index', { title: 'Bethovzart Home' });
@@ -40,16 +39,10 @@ function ProcessUnzippedFiles(path) {
         else {
             console.log(filePaths);
             for (var i = 0; i < filePaths.length; i++) {
-                var parts = filePaths[i].split("/");
-                if (parts.length > 3) {
-                    var qtyParts = parts.length;
-                    if (parts[qtyParts - 1].toLowerCase().endsWith('.mid')) {
-                        var musicStyleParam = parts[qtyParts - 3];
-                        var bandParam = parts[qtyParts - 2];
-                        var songParam = parts[qtyParts - 1];
-                        var query = { name: musicStyle };
-                        musicStyle.findOneAndUpdate({ name: musicStyleParam }, { name: musicStyleParam }, { upsert: true }, recordProcessed);
-                        band.findOneAndUpdate({ name: bandParam }, { name: bandParam }, { upsert: true }, recordProcessed);
+                if (filePaths[i].toLowerCase().endsWith(".mid")) {
+                    var parts = filePaths[i].split("/");
+                    if (parts.length > 3) {
+                        myMidiFile2Db.SaveSongData(filePaths[i]);
                     }
                 }
             }
@@ -57,15 +50,6 @@ function ProcessUnzippedFiles(path) {
     });
 }
 ;
-function recordProcessed(err, doc) {
-    if (!err) {
-        console.log("Se la puse, papi");
-        return;
-    }
-    else {
-        console.log("Me garcharon, papi");
-    }
-}
 function traverseDirectory(dirname, callback) {
     var directory = [];
     fs.readdir(dirname, function (err, list) {

@@ -1,5 +1,6 @@
 "use strict";
 const mongoose = require('mongoose');
+const midiFile = require('./midiFile');
 var songSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -14,10 +15,9 @@ var songSchema = new mongoose.Schema({
         required: true
     },
     midi: {
-        type: Buffer,
+        type: midiFile,
         required: true
-    },
-    midiQuality: Number
+    }
 });
 var song = mongoose.model("song", songSchema);
 module.exports = song;
