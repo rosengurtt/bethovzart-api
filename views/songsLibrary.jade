@@ -69,6 +69,8 @@ block content
                 button.btn.pull-right.btn-primary.btn-lg(type='submit', form='formSongUpload')
                     span.glyphicon.glyphicon-upload
                     |  Upload
+          if (Message)
+          .alert.alert-danger #{Message}
       .col-xs-12.col-sm-12.col-md-4.col-lg-4
         |You can uload a midi file or a zip file contatining midi files.
         br
@@ -76,7 +78,7 @@ block content
         |If you upload a zip file, it should have a folder structure with
         |the music style at the root folder, the musician or band as a second level folder
         |and the midi files as the content of these second level folders
-        
+
   script(type='text/javascript').
     function showFileName(){
       var filename = $('#musicFile').val();

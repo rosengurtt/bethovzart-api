@@ -4,9 +4,9 @@ var multer = require('multer');
 var upload = multer({ dest: 'uploads/' });
 var extract = require('extract-zip')
 var randomstring = require("randomstring");
-import { midiFile2Db } from "../utilities/midiFile2Db";
+import { processUnzippedSongs } from "../utilities/processUnzippedSongs";
 
-let myMidiFile2Db= new midiFile2Db();
+let unzippedSongProcessor = new processUnzippedSongs();
 
 const fs = require('fs');
 
@@ -18,76 +18,37 @@ router.get('/', function (req, res, next) {
 
 /* GET Library page. */
 router.get('/songslibrary', function (req, res) {
-    res.render('songsLibrary', { title: 'Bethovzart Library' });
+    res.render('songsLibrary', { title: 'Bethovzart Library'});
 });
 
 
-router.post('/songslibrary', upload.single('musicFile'), function (req, res, next) {
-    console.log(req.body);
-    console.log(req.file);
-    if (req.file.mimetype === 'application/zip') {
-        var outputFolder = 'uploads/unzipped' + randomstring.generate(7);
-        extract(req.file.path, { dir: outputFolder }, function (err: any) {
-            if (err) {
-                console.log('The unzip of ' + req.file.originalname + 'failed');
-                console.log(err);
-            }
-            else {
-                console.log(req.file.originalname + 'unzipped OK');
-                ProcessUnzippedFiles(outputFolder);
-            }
-        })
+router.post('/songslibrary', upload.single('musicFile'), function (req, res) {
+    if (req.file.mimetype !== 'application/zip') {
+        res.render('songsLibrary', { Message: 'Please provide a zip file' });
     }
-    res.render('songsLibrary', { title: 'Bethovzart Library' });
-});
-
-function ProcessUnzippedFiles(path: string): void {
-    traverseDirectory(path, function (err: Error, filePaths: string[]) {
-        if (err)
+    var outputFolder = 'uploads/unzipped' + randomstring.generate(7);
+    extract(req.file.path, { dir: outputFolder }, function (err: any) {
+        if (err) {
+            console.log('The unzip of ' + req.file.originalname + 'failed');
             console.log(err);
+            res.render('songsLibrary', { Message: 'There was an error unzipping the file' })
+        }
         else {
-            console.log(filePaths);
-            for (var i: number = 0; i < filePaths.length; i++) {
-                if (filePaths[i].toLowerCase().endsWith(".mid")) {
-                    var parts: string[] = filePaths[i].split("/");
-                    if (parts.length > 3) {
-                        myMidiFile2Db.SaveSongData(filePaths[i]);
-                    }
-                }
-            }
+            console.log(req.file.originalname + 'unzipped OK');
+            unzippedSongProcessor.Parse(outputFolder)
+                .then(function (results:string) {
+                    res.render('songsLibrary', { Message: results });
+                })
+                .catch(function (err) {
+                    console.log("Error processing unzipped file.");
+                    console.log(err);
+                    res.render('songsLibrary', { Message: err.message });
+                });
         }
     })
-};
 
+});
 
-function traverseDirectory(dirname: string, callback: (Error, string) => void) {
-    var directory = [];
-    fs.readdir(dirname, function (err, list) {
-        dirname = fs.realpathSync(dirname);
-        if (err) {
-            return callback(err, null);
-        }
-        var listlength = list.length;
-        list.forEach(function (file) {
-            file = dirname + '/' + file;
-            fs.stat(file, function (err, stat) {
-                directory.push(file);
-                if (stat && stat.isDirectory()) {
-                    traverseDirectory(file, function (err, parsed) {
-                        directory = directory.concat(parsed);
-                        if (!--listlength) {
-                            callback(null, directory);
-                        }
-                    });
-                } else {
-                    if (!--listlength) {
-                        callback(null, directory);
-                    }
-                }
-            });
-        });
-    });
-}
 
 
 module.exports = router;

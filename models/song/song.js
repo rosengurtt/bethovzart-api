@@ -1,6 +1,5 @@
 "use strict";
 const mongoose = require('mongoose');
-const midiFile = require('./midiFile');
 var songSchema = new mongoose.Schema({
     name: {
         type: String,
@@ -14,10 +13,10 @@ var songSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    midi: {
-        type: midiFile,
-        required: true
-    }
+    midiArray: [{
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'midiFile'
+        }]
 });
 var song = mongoose.model("song", songSchema);
 module.exports = song;

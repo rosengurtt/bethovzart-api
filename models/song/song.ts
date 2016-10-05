@@ -1,5 +1,5 @@
 import mongoose = require('mongoose');
-import midiFile=require('./midiFile')
+import midiFile = require('./midiFile')
 
 import Isong = require("./Isong");
 
@@ -19,10 +19,10 @@ var songSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    midi: {
-        type: midiFile,
-        required: true
-    }
+    midiArray: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'midiFile'
+    }]
 });
 interface IsongModel extends Isong, mongoose.Document { }
 var song = mongoose.model<IsongModel>("song", songSchema);
