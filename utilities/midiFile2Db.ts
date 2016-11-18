@@ -8,11 +8,10 @@
 //If there is already a copy of the same midi file, it will not save anything
 //If the midi file is different it will save it, but it will not create a new
 //song record, it will just add the midi file to an array of midi files in the song record
-let mongoose = require('mongoose');
+import mongoose = require('mongoose');
 import musicStyle = require('../models/musicStyle/musicStyle');
 import band = require('../models/band/band');
 import song = require('../models/song/song');
-import midiFile = require('../models/song/midiFile');
 import { binaryFile } from './binaryFile';
 const myBinaryFile = new binaryFile();
 const crypto = require('crypto');
@@ -31,7 +30,7 @@ function SaveBand(songDetails: any): Promise<any> {
     const query = { name: songDetails.band };
     return band.findOneAndUpdate(
         query,
-        query,
+        { name: songDetails.band, musicStyle: songDetails.musicStyleObjectId },
         { upsert: true, new: true }).exec()
         .then(function (doc) {
             songDetails.bandObjectId = doc.id;
@@ -41,53 +40,40 @@ function SaveBand(songDetails: any): Promise<any> {
 
 
 
-function FindSong(songDetails: any): Promise<any> {
+function CheckSongDuplication(songDetails: any): Promise<any> {
     return song.find(
-        { name: songDetails.songName, band: songDetails.bandObjectId }).exec()
+        {
+            "$or": [{
+                "name": songDetails.songName,
+                "band": songDetails.bandObjectId
+            },
+            { "hash": songDetails.hash }]
+        }
+    ).exec()
         .then(function (songs) {
             if (songs.length === 0) {
                 return songDetails;
             }
-
-            if (songs.length === 1) {
-                songDetails.songObjectId = songs[0].id;
-                songDetails.arrayOfMidis = songs[0].midiArray;
-                return songDetails;
-            }
-            if (songs.length > 1)
-                Promise.reject("Found a duplicated song, aborting.");
-
+            Promise.reject("Found a duplicated song, aborting.");
         });
 }
 
 
 function SaveSong(songDetails: any): Promise<any> {
-
-    if (songDetails.songObjectId) {
-
-        return song.findByIdAndUpdate(songDetails.songObjectId,
-            {
-                $push: songDetails.newMidiFile
-            },
-            { upsert: false }).exec();
-    }
-    else {
-        let newArrayOfMidi = [];
-        newArrayOfMidi.push(songDetails.newMidiFile);
-        let newSong = new song({
-            name: songDetails.songName,
-            musicStyle: songDetails.musicStyleObjectId,
-            band: songDetails.bandObjectId,
-            midiArray: newArrayOfMidi
-        })
-        return newSong.save();
-    }
+    let newSong = new song({
+        name: songDetails.songName,
+        musicStyle: songDetails.musicStyleObjectId,
+        band: songDetails.bandObjectId,
+        midiFile: songDetails.midiFile,
+        hash: songDetails.hash
+    });
+    return newSong.save();
 }
+
 
 export class midiFile2Db {
 
     public async SaveSongData(filePath: string): Promise<string> {
-
 
         if (!filePath || !filePath.toLowerCase().endsWith('.mid'))
             return;
@@ -103,36 +89,22 @@ export class midiFile2Db {
             band: parts[qtyParts - 2],
             songName: parts[qtyParts - 1],
             filePath: filePath,
-            songObjectId: null,
-            arrayOfMidis: null,
-            newMidiFile: null
+            midiFile: null,
+            hash: null
         };
         try {
             songDetails = await SaveMusicStyle(songDetails);
             songDetails = await SaveBand(songDetails);
-            songDetails = await FindSong(songDetails);
             //Read the content of the uploaded midi file and calculate hash
-            const midiFileContent = await myBinaryFile.readFile(songDetails.filePath);
-            let hashOfMidi = crypto.createHash('md5').update(midiFileContent).digest();
-            let newMidiFile = new midiFile({
-                midiBytes: midiFileContent,
-                hash: hashOfMidi,
-                length: midiFileContent.length
-            });
-            //check if we have a record of this song or we have to create one
-            if (songDetails.songObjectId) {
-                //First check if there is already a copy of this file in the array of midi files
-                for (let midi of songDetails.arrayOfMidis) {
-                    if (hashOfMidi === midi.hash)
-                        // This file is already in the database, skip it
-                        return;
-                }
-            }
-            songDetails.newMidiFile = newMidiFile;
+            songDetails.midiFile = await myBinaryFile.readFile(songDetails.filePath);
+            songDetails.hash = crypto.createHash('md5').update(songDetails.midiFile).digest();
+            songDetails = await CheckSongDuplication(songDetails);
             songDetails = await SaveSong(songDetails);
+            return "OK";
         }
         catch (err) {
             console.log(err);
+            return err;
         }
     }
 

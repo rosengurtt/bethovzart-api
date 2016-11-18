@@ -7,11 +7,10 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments)).next());
     });
 };
-let mongoose = require('mongoose');
+const mongoose = require('mongoose');
 const musicStyle = require('../models/musicStyle/musicStyle');
 const band = require('../models/band/band');
 const song = require('../models/song/song');
-const midiFile = require('../models/song/midiFile');
 const binaryFile_1 = require('./binaryFile');
 const myBinaryFile = new binaryFile_1.binaryFile();
 const crypto = require('crypto');
@@ -25,48 +24,40 @@ function SaveMusicStyle(songDetails) {
 }
 function SaveBand(songDetails) {
     const query = { name: songDetails.band };
-    return band.findOneAndUpdate(query, query, { upsert: true, new: true }).exec()
+    return band.findOneAndUpdate(query, { name: songDetails.band, musicStyle: songDetails.musicStyleObjectId }, { upsert: true, new: true }).exec()
         .then(function (doc) {
         songDetails.bandObjectId = doc.id;
         return songDetails;
     });
 }
-function FindSong(songDetails) {
-    return song.find({ name: songDetails.songName, band: songDetails.bandObjectId }).exec()
+function CheckSongDuplication(songDetails) {
+    return song.find({
+        "$or": [{
+                "name": songDetails.songName,
+                "band": songDetails.bandObjectId
+            },
+            { "hash": songDetails.hash }]
+    }).exec()
         .then(function (songs) {
         if (songs.length === 0) {
             return songDetails;
         }
-        if (songs.length === 1) {
-            songDetails.songObjectId = songs[0].id;
-            songDetails.arrayOfMidis = songs[0].midiArray;
-            return songDetails;
-        }
-        if (songs.length > 1)
-            Promise.reject("Found a duplicated song, aborting.");
+        Promise.reject("Found a duplicated song, aborting.");
     });
 }
 function SaveSong(songDetails) {
-    if (songDetails.songObjectId) {
-        return song.findByIdAndUpdate(songDetails.songObjectId, {
-            $push: songDetails.newMidiFile
-        }, { upsert: false }).exec();
-    }
-    else {
-        let newArrayOfMidi = [];
-        newArrayOfMidi.push(songDetails.newMidiFile);
-        let newSong = new song({
-            name: songDetails.songName,
-            musicStyle: songDetails.musicStyleObjectId,
-            band: songDetails.bandObjectId,
-            midiArray: newArrayOfMidi
-        });
-        return newSong.save();
-    }
+    let newSong = new song({
+        name: songDetails.songName,
+        musicStyle: songDetails.musicStyleObjectId,
+        band: songDetails.bandObjectId,
+        midiFile: songDetails.midiFile,
+        hash: songDetails.hash
+    });
+    return newSong.save();
 }
 class midiFile2Db {
     SaveSongData(filePath) {
-        return __awaiter(this, void 0, Promise, function* () {
+        return __awaiter(this, void 0, void 0, function* () {
             if (!filePath || !filePath.toLowerCase().endsWith('.mid'))
                 return;
             let parts = filePath.split("/");
@@ -78,32 +69,24 @@ class midiFile2Db {
                 band: parts[qtyParts - 2],
                 songName: parts[qtyParts - 1],
                 filePath: filePath,
-                songObjectId: null,
-                arrayOfMidis: null,
-                newMidiFile: null
+                midiFile: null,
+                hash: null
             };
             try {
                 songDetails = yield SaveMusicStyle(songDetails);
                 songDetails = yield SaveBand(songDetails);
-                songDetails = yield FindSong(songDetails);
-                const midiFileContent = yield myBinaryFile.readFile(songDetails.filePath);
-                let hashOfMidi = crypto.createHash('md5').update(midiFileContent).digest();
-                let newMidiFile = new midiFile({
-                    midiBytes: midiFileContent,
-                    hash: hashOfMidi,
-                    length: midiFileContent.length
-                });
-                if (songDetails.songObjectId) {
-                    for (let midi of songDetails.arrayOfMidis) {
-                        if (hashOfMidi === midi.hash)
-                            return;
-                    }
-                }
-                songDetails.newMidiFile = newMidiFile;
+                songDetails.midiFile = yield myBinaryFile.readFile(songDetails.filePath);
+                console.log("aca esta la data de la muerte");
+                console.log(songDetails.midiFile.length);
+                console.log(songDetails.songName);
+                songDetails.hash = crypto.createHash('md5').update(songDetails.midiFile).digest();
+                songDetails = yield CheckSongDuplication(songDetails);
                 songDetails = yield SaveSong(songDetails);
+                return "OK";
             }
             catch (err) {
                 console.log(err);
+                return err;
             }
         });
     }

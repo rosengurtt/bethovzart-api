@@ -11,27 +11,30 @@ block content
         .panel-body
           .row
             ul.list-group.musiclistbox
-              li.list-group-item Classic
-              li.list-group-item Rock
-              li.list-group-item Jazz
+              - for (var i = 0; i < styles.length; ++i) {
+                li.list-group-item(class="#{selectedStyle == styles[i]._id ? 'active':'' }")  
+                  a(href='/songsLibrary?styleid=#{styles[i]._id}')=  styles[i].name
+              - }
     .col-xs-12.col-sm-12.col-md-4.col-lg-4
       .panel.panel-info
         .panel-heading Musicians
         .panel-body
           .row
             ul.list-group.musiclistbox
-              li.list-group-item Deep Purple
-              li.list-group-item Led Zeppelin
-              li.list-group-item Pink Floyd
+              - for (var i = 0; i < bands.length; ++i) {
+                li.list-group-item(class="#{selectedBand == bands[i]._id ? 'active':'' }")  
+                  a(href='/songsLibrary?bandid=#{bands[i]._id}&styleid=#{selectedStyle}')= bands[i].name
+              - }
     .col-xs-12.col-sm-12.col-md-4.col-lg-4
       .panel.panel-info
         .panel-heading Songs
         .panel-body
           .row
             ul.list-group.musiclistbox
-              li.list-group-item Stairway to Heaven
-              li.list-group-item Message in a bottle
-              li.list-group-item Wonderwall
+              - for (var i = 0; i < songs.length; ++i) {
+                li.list-group-item
+                  a(href='analyze/#{songs[i]._id}')= songs[i].name
+              - }
   .row
       .col-xs-12.col-sm-12.col-md-12.col-lg-12
         .h3 Upload songs

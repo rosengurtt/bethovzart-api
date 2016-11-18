@@ -5,11 +5,9 @@ var _ = require('underscore');
 export class binaryFile {
 
     public readFile(filePath: string): Promise<Buffer> {
-        console.log("entre al sorete de readFile");
         let promise = new Promise(
             function resolver(resolve, reject) {
                 fs.stat(filePath, function (err, stats) {
-                    console.log("ejecute el fs stats");
                     if (err)
                         return reject(err);
 

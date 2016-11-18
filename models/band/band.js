@@ -5,6 +5,10 @@ var bandSchema = new mongoose.Schema({
         type: String,
         required: true,
         unique: true
+    },
+    musicStyle: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true
     }
 });
 var band = mongoose.model("band", bandSchema);

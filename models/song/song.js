@@ -13,10 +13,14 @@ var songSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         required: true
     },
-    midiArray: [{
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'midiFile'
-        }]
+    midiFile: {
+        type: Buffer,
+        required: true
+    },
+    hash: {
+        type: Buffer,
+        required: true
+    }
 });
 var song = mongoose.model("song", songSchema);
 module.exports = song;

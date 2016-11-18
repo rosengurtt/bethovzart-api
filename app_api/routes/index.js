@@ -1,0 +1,20 @@
+"use strict";
+const express = require("express");
+var router = express.Router();
+var ctrlStyles = require('../controllers/styles');
+var ctrlBands = require('../controllers/bands');
+var ctrlSongs = require('../controllers/songs');
+var ctrlUploads = require('../controllers/uploads');
+var multer = require('multer');
+var upload = multer({ dest: 'uploads/' });
+router.get('/styles', ctrlStyles.getAllStyles);
+router.get('/bands/all', ctrlBands.getAllBands);
+router.get('/bands/style/:styleid', ctrlBands.getAllBandsForStyle);
+router.get('/songs/all', ctrlSongs.getAllSongs);
+router.get('/songs/:songid', ctrlSongs.getSongById);
+router.get('/songs/style/:styleid', ctrlSongs.getAllSongsForStyle);
+router.get('/songs/band/:bandid', ctrlSongs.getAllSongsForBand);
+router.get('/songs/midi/:songid', ctrlSongs.getSongMidiById);
+router.post('/uploads', upload.single('musicFile'), ctrlUploads.postUploadFile);
+module.exports = router;
+//# sourceMappingURL=index.js.map

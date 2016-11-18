@@ -8,8 +8,7 @@
         "sourceMap": true
     },
      "include": [
-        "views",
-        "routes"
+        "/**/*"
     ],
     "exclude": [
         "node_modules"

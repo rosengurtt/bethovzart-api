@@ -1,5 +1,8 @@
+import mongoose = require('mongoose');
+
 interface Iband{
-    name:string
+    name:string,
+    musicStyle:mongoose.Schema.Types.ObjectId, 
 };
 
 export = Iband;
